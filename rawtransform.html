@@ -1,0 +1,213 @@
+<html>
+<head>
+<style>
+    * {box-sizing: border-box;}
+
+    .img-zoom-container {
+    position: relative;
+    }
+
+    .img-zoom-lens {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    /*set the size of the lens:*/
+    width: 80px;
+    height: 80px;
+    }
+
+    .img-zoom-result {
+    border: 1px solid #d4d4d4;
+    /*set the size of the result div:*/
+    width: 200px;
+    height: 200px;
+    }
+
+</style>
+
+<script>
+    var u ;
+    var zoomsize = 80;
+
+    function readSingleFile(e) {
+        var file = e.target.files[0];
+        if (!file) {
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var contents = e.target.result;
+            //displayContents(contents);
+                u = new Uint16Array(this.result);
+                var i = u.length;
+                console.log(u);
+                mi(u,"Gr");
+        };
+        reader.readAsArrayBuffer(file);
+
+    }
+
+
+
+    // document.getElementById('file-input');
+    document.addEventListener('change', readSingleFile, false);
+
+    function newEl(tag){return document.createElement(tag);}
+    function CD(rgbData,selector)
+    {
+        var mCanvas = newEl('canvas');
+        width=3552;
+        height=2440;
+        mCanvas.width = width/2;
+        mCanvas.height = height/2;
+        
+        var mContext = mCanvas.getContext('2d');
+        var mImgData = mContext.createImageData(width/2, height/2);
+        
+        var srcIndex=0, dstIndex=0, curPixelNum=0;
+        
+        var min=255,max=0;
+
+        if(selector=="Gb" || selector=="B") {srcIndex+=width/2;
+        }
+
+        for (curPixelNum=0; curPixelNum<width*height/4;  curPixelNum++)
+        {
+            if(selector=="Gr"){ 
+            pixel=rgbData[srcIndex*2+1] ; //gr 
+            transformed= ((80 * Math.log10(pixel+1))-200)*7; //Gr
+            } else if(selector=="R") { 
+            pixel=rgbData[srcIndex*2] ; //R
+            transformed= ((80 * Math.log10(pixel+1))-175)*7;
+            } else if(selector=="Gb") {
+            pixel=rgbData[srcIndex*2] ;//Gb
+            transformed= ((80 * Math.log10(pixel+1))-200)*7;
+            } else if(selector=="B") {
+            pixel=rgbData[srcIndex*2+1] ;//B
+            transformed= ((80 * Math.log10(pixel+1))-175)*6.5;
+            } 
+            // transformed= ((Math.pow(pixel,2))-6000)/1000;
+            mImgData.data[dstIndex] = transformed;// ((revers >>12 )& 0xFF);   //((rgbData[srcIndex]  )& 15);  //((rgbData[srcIndex] )& 0x0F);    // r
+            mImgData.data[dstIndex+1] = transformed;// ((revers >>8 )& 0xFF); //((rgbData[srcIndex] >>12 )& 15);//((rgbData[srcIndex]>>12 )& 0x0F);	// g
+            mImgData.data[dstIndex+2] = transformed;// ((revers >>4 )& 0xFF); //((rgbData[srcIndex] >>8 )& 15);//((rgbData[srcIndex]>>8 )& 0x0F);	// b
+            mImgData.data[dstIndex+3] = 255; // 255 = 0xFF - constant alpha, 100% opaque
+            srcIndex += 1;
+            
+            if(min>transformed) min=transformed;
+            if(max<transformed) max=transformed;
+
+            if(srcIndex%(width/2)==0) srcIndex+=width/2;
+            dstIndex += 4;
+        }
+        console.log(mImgData.data);
+        console.log(min);
+        console.log(max);
+        mContext.putImageData(mImgData, 0, 0);
+
+
+
+        return mCanvas;
+
+    }
+
+
+
+    function mi(rgbData,selector)
+    {
+        var mCanvas = CD(rgbData,selector);
+        var mImg = newEl("img");
+        var mZoom = newEl("div"); 
+        var imgDataUrl = mCanvas.toDataURL();	// make a base64 string of the image data (the array above)
+        mImg.src = imgDataUrl;
+        mImg.setAttribute('style', "width:300px; height:200px; border:solid 1px black"); // make it large enough to be visible
+        mImg.setAttribute('id', "myimage"); // make it large enough to be visible
+        mZoom.setAttribute('id','myresult');
+        mZoom.setAttribute('class','img-zoom-result');
+        document.body.appendChild(mImg);
+        document.body.appendChild(mZoom);
+        document.body.innerHTML += (selector + "<br>");
+        imageZoom("myimage", "myresult"); 
+    }
+
+
+
+function imageZoom(imgID, resultID) {
+  var img, lens, result, cx, cy;
+  img = document.getElementById(imgID);
+  result = document.getElementById(resultID);
+  /*create lens:*/
+  lens = document.createElement("DIV");
+  lens.setAttribute("class", "img-zoom-lens");
+    lens.addEventListener("mousewheel", function mwh(e){
+        zoomsize=zoomsize - e.wheelDelta/12;
+        lens.style.height= zoomsize;
+        lens.style.width= zoomsize;
+        console.log(e.wheelDelta);
+        console.log(lens);
+        console.log(lens.style.height);
+        cx = result.offsetWidth / lens.offsetWidth;
+        cy = result.offsetHeight / lens.offsetHeight;
+        result.style.backgroundSize = (img.width * cx) + "px " + (img.height * cy) + "px";
+        }, false);
+
+  /*insert lens:*/
+  img.parentElement.insertBefore(lens, img);
+  /*calculate the ratio between result DIV and lens:*/
+  cx = result.offsetWidth / lens.offsetWidth;
+  cy = result.offsetHeight / lens.offsetHeight;
+  /*set background properties for the result DIV*/
+  result.style.backgroundImage = "url('" + img.src + "')";
+  result.style.backgroundSize = (img.width * cx) + "px " + (img.height * cy) + "px";
+  /*execute a function when someone moves the cursor over the image, or the lens:*/
+  lens.addEventListener("mousemove", moveLens);
+  img.addEventListener("mousemove", moveLens);
+  /*and also for touch screens:*/
+  lens.addEventListener("touchmove", moveLens);
+  img.addEventListener("touchmove", moveLens);
+  function moveLens(e) {
+    var pos, x, y;
+    /*prevent any other actions that may occur when moving over the image*/
+    e.preventDefault();
+    /*get the cursor's x and y positions:*/
+    pos = getCursorPos(e);
+    /*calculate the position of the lens:*/
+    x = pos.x - (lens.offsetWidth / 2);
+    y = pos.y - (lens.offsetHeight / 2);
+    /*prevent the lens from being positioned outside the image:*/
+    if (x > img.width - lens.offsetWidth) {x = img.width - lens.offsetWidth;}
+    if (x < 0) {x = 0;}
+    if (y > img.height - lens.offsetHeight) {y = img.height - lens.offsetHeight;}
+    if (y < 0) {y = 0;}
+    /*set the position of the lens:*/
+    lens.style.left = x +img.offsetLeft + "px";
+    lens.style.top = y +img.offsetTop + "px";
+    /*display what the lens "sees":*/
+    result.style.backgroundPosition = "-" + (x * cx) + "px -" + (y * cy) + "px";
+  }
+  function getCursorPos(e) {
+    var a, x = 0, y = 0;
+    e = e || window.event;
+    /*get the x and y positions of the image:*/
+    a = img.getBoundingClientRect();
+    /*calculate the cursor's x and y coordinates, relative to the image:*/
+    x = e.pageX - a.left;
+    y = e.pageY - a.top;
+    /*consider any page scrolling:*/
+    x = x - window.pageXOffset;
+    y = y - window.pageYOffset;
+    return {x : x, y : y};
+  }
+}
+
+
+
+
+
+</script>
+</head>
+
+<body>
+    <input type="file" id="file-input" />
+    <h3>Contents of the file:</h3>
+
+</body>
+</html>
