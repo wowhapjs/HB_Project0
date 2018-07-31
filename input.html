@@ -3,6 +3,13 @@
     <head>
         <title>Project 0</title>
         <link rel="stylesheet" href="css/bootstrap.min.css">
+        <style>
+            ol > li {
+                color: red;
+
+            }
+        
+        </style>
     </head>
     <body>
         <nav class="navbar navbar-expand-xl navbar-light bg-light">
@@ -36,33 +43,51 @@
             </div>
         </nav>
 
-        <div class="jumbotron jumbotron-fluid">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-4">
-                            <img src="xl-2016-ai-robot-1.jpg" class="img-fluid rounded-top rounded-right rounded-bottom rounded-left" alt="">
-                    </div>
-                    <div class="col-lg-8">
-                            <h1 class="display-3">Machine learning</h1>
-                            <p class="lead">It's more smarter than any others in the world</p>
-                            <hr class="my-2">
-                            <p>Tensorflow engine will be attateched</p>
-                            <p class="lead">
-                                <a class="btn btn-primary btn-lg" href="list.html" role="button">Next Page</a>
-                            </p>
-                                    
-                    </div>
-                </div>
-            </div>
+        <div class="jumbotron">
+            <h1 class="display-3">Jumbo heading</h1>
+            <p class="lead">Jumbo helper text</p>
+            <hr class="my-2">
+            <p>More info</p>
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="index.html" role="button">Lets go back to first</a>
+            </p>
         </div>
+    <div>
+        <input name="name" type="text" placeholder="Name">
+        <input name="password" type="password" placeholder="">
+    </div>
+    <div>
+        <input name="color" type="radio" value="red"> Red
+        <input name="color" type="radio" value="blue"> Blue
+        <input name="color" type="radio" value="black"> Black
+        <input name="color" type="radio" value="and"> And
 
-    <ul class="list-group">
-        <li><a href="#li1" class="list-group-item active">li1</a></li>
-        <li><a href="#li2" class="list-group-item ">li2</a></li>
-        <li><a href="#li3" class="list-group-item ">li3</a></li>
-        <li><a href="#li4" class="list-group-item disabled">li4</a></li>
-    </ul>
-    
+    </div>
+
+    <div>
+        <input name="Country" list="countries" Placeholder="Country">
+        <datalist id="countries">
+            <option value="Korea"></option>
+            <option value="Japan"></option>
+            <option value="China"></option>
+            
+        </datalist>
+    </div>
+
+    <ol>
+        <li>a1</li>
+        <li>a1</li>
+        <li>a1</li>
+        <ul>
+            <li>li1</li>
+            <li>li1</li>
+        </ul>
+        <li>a1</li>
+
+    </ol>
+
+
+
     </body>
 
     <script src="js/jquery-3.3.1.min.js"></script>
